@@ -23,10 +23,10 @@ export const BigPost = props => {
                     <div
                         style={{
                             width: "100%",
-                            height: "100%"
+                            height: "80%"
                         }}
                     >
-                        <Fab>
+                        <Fab size="small" onClick={props.onClose}>
                             <Close />
                         </Fab>
                         <Card

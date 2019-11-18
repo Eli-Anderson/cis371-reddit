@@ -1,14 +1,7 @@
 import React, { useState } from "react";
-import ReactMarkdown from "react-markdown";
 import { useHover } from "web-api-hooks";
 import { PostIneractions } from "./PostInteractions";
-import {
-    Fade,
-    Collapse,
-    Card,
-    CardHeader,
-    CardContent
-} from "@material-ui/core";
+import { Fade, Card, CardHeader, CardContent, Link } from "@material-ui/core";
 import { BigPost } from "./BigPost";
 
 export const Post = props => {
@@ -16,14 +9,31 @@ export const Post = props => {
     const [isHovered, bindHover] = useHover();
 
     return (
-        <div {...bindHover} style={{ margin: 8, marginLeft: 30 }}>
-            <Fade in={isHovered} style={{ position: "relative" }}>
+        <div
+            {...bindHover}
+            style={{ margin: 8, marginLeft: 30, overflow: "visible" }}
+        >
+            <Fade
+                in={isHovered}
+                style={{ position: "relative", overflow: "visible" }}
+            >
                 <div
                     style={{
                         position: "absolute",
-                        left: 0
+                        left: 0,
+                        overflow: "visible"
                     }}
                 >
+                    <Link
+                        style={{
+                            position: "relative",
+                            top: -14,
+                            left: 26
+                        }}
+                        href={`/u/${props.user.name}`}
+                    >
+                        {props.user.name}
+                    </Link>
                     <PostIneractions
                         onUpvote={() => {
                             console.log("upvoted");
@@ -38,20 +48,14 @@ export const Post = props => {
             <Card
                 style={{ cursor: "pointer" }}
                 onClick={() => {
-                    setOpen(true);
+                    if (props.markdown) setOpen(true);
+                    else window.open(props.url, "_blank");
                 }}
             >
                 <CardHeader
                     style={{ textAlign: "left" }}
                     title={props.title}
                 ></CardHeader>
-                <CardContent>
-                    <Collapse in={isHovered} collapsedHeight="36px">
-                        <div style={{ overflowX: "scroll" }}>
-                            <ReactMarkdown source={props.markdown} />
-                        </div>
-                    </Collapse>
-                </CardContent>
             </Card>
             <BigPost
                 open={open}

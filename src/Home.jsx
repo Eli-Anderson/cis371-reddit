@@ -1,15 +1,15 @@
 import React from "react";
 import { Feed } from "./Feed";
 import { Container, Row, Col } from "react-bootstrap";
+import { AppHeader } from "./AppHeader";
 export const Home = props => {
     return (
         <Container fluid>
             <Row>
                 <Col>
-                    <div
-                        style={{ height: 120, width: "100%" }}
-                        id="header"
-                    ></div>
+                    <div style={{ height: 120, width: "100%" }} id="header">
+                        <AppHeader />
+                    </div>
                 </Col>
             </Row>
             <Row>
