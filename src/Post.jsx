@@ -4,7 +4,16 @@ import { PostIneractions } from "./PostInteractions";
 import { Fade, Card, CardHeader, CardContent, Link } from "@material-ui/core";
 import { BigPost } from "./BigPost";
 
-export const Post = props => {
+export const Post = ({
+    postID,
+    content,
+    link,
+    time,
+    title,
+    userID,
+    viewCount,
+    voteCount
+}) => {
     const [open, setOpen] = useState(false);
     const [isHovered, bindHover] = useHover();
 
@@ -30,9 +39,9 @@ export const Post = props => {
                             top: -14,
                             left: 26
                         }}
-                        href={`/u/${props.user.name}`}
+                        href={`/u/${userID}`}
                     >
-                        {props.user.name}
+                        {userID}
                     </Link>
                     <PostIneractions
                         onUpvote={() => {
@@ -41,27 +50,27 @@ export const Post = props => {
                         onDownvote={() => {
                             console.log("downvoted");
                         }}
-                        user={props.user.name}
+                        user={userID}
                     />
                 </div>
             </Fade>
             <Card
                 style={{ cursor: "pointer" }}
                 onClick={() => {
-                    if (props.markdown) setOpen(true);
-                    else window.open(props.url, "_blank");
+                    if (content) setOpen(true);
+                    else window.open(link, "_blank");
                 }}
             >
                 <CardHeader
                     style={{ textAlign: "left" }}
-                    title={props.title}
+                    title={title}
                 ></CardHeader>
             </Card>
             <BigPost
                 open={open}
                 onClose={() => setOpen(false)}
-                markdown={props.markdown}
-                title={props.title}
+                markdown={content}
+                title={title}
             />
         </div>
     );

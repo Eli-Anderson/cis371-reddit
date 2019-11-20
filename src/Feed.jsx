@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Post } from "./Post";
 import { GridList, GridListTile } from "@material-ui/core";
 import { makeStyles } from "@material-ui/styles";
+import { Firestore } from "./db-init";
 
 const useStyles = makeStyles({
     gridListTile: { overflow: "visible" }
@@ -11,7 +12,16 @@ export const Feed = props => {
     const classes = useStyles(props);
     const [posts, setPosts] = useState([]);
 
-    useEffect(() => {}, []);
+    useEffect(() => {
+        Firestore.collection("subreddits")
+            .doc("cis371")
+            .collection("posts")
+            .orderBy("time", "desc")
+            .limit(10)
+            .get()
+            .then(value => value.docs.map(x => x.data()))
+            .then(data => setPosts(data));
+    }, []);
 
     return (
         <GridList cellHeight={200} cols={2} spacing={20}>
