@@ -3,6 +3,7 @@ import { useHover } from "web-api-hooks";
 import { PostIneractions } from "./PostInteractions";
 import { Fade, Card, CardHeader, CardContent, Link } from "@material-ui/core";
 import { BigPost } from "./BigPost";
+import { Firestore } from "./db-init";
 
 export const Post = ({
     postID,
@@ -14,6 +15,7 @@ export const Post = ({
     viewCount,
     voteCount
 }) => {
+    console.log(voteCount);
     const [open, setOpen] = useState(false);
     const [isHovered, bindHover] = useHover();
 
@@ -45,7 +47,14 @@ export const Post = ({
                     </Link>
                     <PostIneractions
                         onUpvote={() => {
-                            console.log("upvoted");
+                            console.log(voteCount + 1);
+                            Firestore.collection("subreddits")
+                                .doc("cis371")
+                                .collection("posts")
+                                .doc(postID)
+                                .update({
+                                    voteCount: voteCount + 1
+                                });
                         }}
                         onDownvote={() => {
                             console.log("downvoted");

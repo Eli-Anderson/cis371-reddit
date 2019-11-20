@@ -2,6 +2,7 @@ import React from "react";
 import { Feed } from "./Feed";
 import { Container, Row, Col } from "react-bootstrap";
 import { AppHeader } from "./AppHeader";
+import { Login } from "./Login";
 export const Home = props => {
     return (
         <Container fluid>
@@ -27,6 +28,7 @@ export const Home = props => {
                     ></div>
                 </Col>
             </Row>
+            <Login />
         </Container>
     );
 };
