@@ -19,7 +19,7 @@ export const Feed = props => {
             .orderBy("time", "desc")
             .limit(10)
             .get()
-            .then(value => value.docs.map(x => x.data()))
+            .then(value => value.docs.map(x => ({ ...x.data(), postID: x.id })))
             .then(data => setPosts(data));
     }, []);
 
