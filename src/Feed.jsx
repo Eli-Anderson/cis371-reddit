@@ -18,9 +18,11 @@ export const Feed = props => {
             .collection("posts")
             .orderBy("time", "desc")
             .limit(10)
-            .get()
-            .then(value => value.docs.map(x => ({ ...x.data(), postID: x.id })))
-            .then(data => setPosts(data));
+            .onSnapshot(snapshot => {
+                setPosts(
+                    snapshot.docs.map(x => ({ ...x.data(), postID: x.id }))
+                );
+            });
     }, []);
 
     return (

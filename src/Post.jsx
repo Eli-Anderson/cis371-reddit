@@ -1,9 +1,8 @@
-import React, { useState } from "react";
-import { useHover } from "web-api-hooks";
-import { PostIneractions } from "./PostInteractions";
-import { Fade, Card, CardHeader, CardContent, Link } from "@material-ui/core";
+import React, { useState, useEffect, useRef } from "react";
+import { PostFooter } from "./PostFooter";
+import { Card, CardHeader } from "@material-ui/core";
 import { BigPost } from "./BigPost";
-import { Firestore } from "./db-init";
+import { Firestore, increment } from "./db-init";
 
 export const Post = ({
     postID,
@@ -15,65 +14,108 @@ export const Post = ({
     viewCount,
     voteCount
 }) => {
-    console.log(voteCount);
+    const userVoteListener = useRef(null);
     const [open, setOpen] = useState(false);
-    const [isHovered, bindHover] = useHover();
+    const [userVote, setUserVote] = useState(null);
+
+    useEffect(() => {
+        if (!userVoteListener.current) {
+            userVoteListener.current = Firestore.collection("users")
+                .doc("andeelij")
+                .collection("votes")
+                .doc(postID)
+                .onSnapshot(snapshot => {
+                    if (snapshot.exists) {
+                        setUserVote(snapshot.data().value);
+                    }
+                });
+        } else {
+            userVoteListener.current(); // unsubscribe
+        }
+    }, [postID]);
 
     return (
-        <div
-            {...bindHover}
-            style={{ margin: 8, marginLeft: 30, overflow: "visible" }}
-        >
-            <Fade
-                in={isHovered}
-                style={{ position: "relative", overflow: "visible" }}
-            >
-                <div
-                    style={{
-                        position: "absolute",
-                        left: 0,
-                        overflow: "visible"
+        <div style={{ margin: 8, marginLeft: 30, overflow: "visible" }}>
+            <Card>
+                <CardHeader
+                    onClick={() => {
+                        if (content) setOpen(true);
+                        else window.open(link, "_blank");
                     }}
-                >
-                    <Link
-                        style={{
-                            position: "relative",
-                            top: -14,
-                            left: 26
-                        }}
-                        href={`/u/${userID}`}
-                    >
-                        {userID}
-                    </Link>
-                    <PostIneractions
+                    style={{ textAlign: "left", cursor: "pointer" }}
+                    title={title}
+                ></CardHeader>
+                <div style={{ backgroundColor: "#fafafa" }}>
+                    <PostFooter
+                        subreddit={"cis371"}
+                        time={time}
+                        userID={userID}
+                        voteCount={voteCount}
+                        userVote={userVote}
                         onUpvote={() => {
-                            console.log(voteCount + 1);
-                            Firestore.collection("subreddits")
-                                .doc("cis371")
-                                .collection("posts")
+                            let voteCount = 0;
+                            let userVoteValue = 0;
+
+                            if (userVote === -1) {
+                                voteCount = 2;
+                                userVoteValue = 1;
+                            } else if (!userVote) {
+                                voteCount = 1;
+                                userVoteValue = 1;
+                            } else if (userVote === 1) {
+                                voteCount = -1;
+                                userVoteValue = 0;
+                            }
+                            if (voteCount) {
+                                Firestore.collection("subreddits")
+                                    .doc("cis371")
+                                    .collection("posts")
+                                    .doc(postID)
+                                    .update({
+                                        voteCount: increment(voteCount)
+                                    });
+                            }
+                            Firestore.collection("users")
+                                .doc("andeelij")
+                                .collection("votes")
                                 .doc(postID)
-                                .update({
-                                    voteCount: voteCount + 1
+                                .set({
+                                    value: userVoteValue
                                 });
                         }}
                         onDownvote={() => {
-                            console.log("downvoted");
+                            let voteCount = 0;
+                            let userVoteValue = 0;
+
+                            if (userVote === 1) {
+                                voteCount = -2;
+                                userVoteValue = -1;
+                            } else if (!userVote) {
+                                voteCount = -1;
+                                userVoteValue = -1;
+                            } else if (userVote === -1) {
+                                voteCount = 1;
+                                userVoteValue = 0;
+                            }
+                            if (voteCount) {
+                                Firestore.collection("subreddits")
+                                    .doc("cis371")
+                                    .collection("posts")
+                                    .doc(postID)
+                                    .update({
+                                        voteCount: increment(voteCount)
+                                    });
+                            }
+                            Firestore.collection("users")
+                                .doc("andeelij")
+                                .collection("votes")
+                                .doc(postID)
+                                .set({
+                                    value: userVoteValue
+                                });
                         }}
-                        user={userID}
                     />
                 </div>
-            </Fade>
-            <Card
-                style={{ cursor: "pointer" }}
-                onClick={() => {
-                    if (content) setOpen(true);
-                    else window.open(link, "_blank");
-                }}
-            >
-                <CardHeader
-                    style={{ textAlign: "left" }}
-                    title={title}
-                ></CardHeader>
             </Card>
             <BigPost
                 open={open}

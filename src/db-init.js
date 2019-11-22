@@ -17,4 +17,5 @@ firebase.initializeApp(firebaseConfig);
 
 const Firestore = firebase.firestore();
 const AppAUTH = firebase.auth();
-export { Firestore, AppAUTH };
+const increment = firebase.firestore.FieldValue.increment;
+export { Firestore, AppAUTH, increment };
