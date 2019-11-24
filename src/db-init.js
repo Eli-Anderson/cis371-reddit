@@ -18,4 +18,5 @@ firebase.initializeApp(firebaseConfig);
 const Firestore = firebase.firestore();
 const AppAUTH = firebase.auth();
 const increment = firebase.firestore.FieldValue.increment;
-export { Firestore, AppAUTH, increment };
+const getTimestamp = firebase.firestore.FieldValue.serverTimestamp;
+export { Firestore, AppAUTH, increment, getTimestamp };

@@ -46,9 +46,13 @@ export const PostFooter = ({
                     color="textSecondary"
                     display="inline"
                 >
-                    {moment
-                        .duration(moment.unix(time.seconds).diff(moment()))
-                        .humanize(true)}
+                    {time
+                        ? moment
+                              .duration(
+                                  moment.unix(time.seconds).diff(moment())
+                              )
+                              .humanize(true)
+                        : "just now"}
                 </Typography>
                 <Typography
                     variant="subtitle2"

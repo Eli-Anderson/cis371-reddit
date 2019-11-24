@@ -7,7 +7,7 @@ import { Firestore, increment } from "./db-init";
 export const Post = ({
     postID,
     content,
-    link,
+    url,
     time,
     title,
     userID,
@@ -35,12 +35,12 @@ export const Post = ({
     }, [postID]);
 
     return (
-        <div style={{ margin: 8, marginLeft: 30, overflow: "visible" }}>
-            <Card>
+        <div>
+            <Card style={{ margin: 6 }}>
                 <CardHeader
                     onClick={() => {
                         if (content) setOpen(true);
-                        else window.open(link, "_blank");
+                        else window.open(url, "_blank");
                     }}
                     style={{ textAlign: "left", cursor: "pointer" }}
                     title={title}
