@@ -22,7 +22,7 @@ const useStyles = makeStyles({
     container2: {
         margin: "4mm 2mm 2mm 2mm",
         display: "grid",
-        gridTemplateColumns: "repeat(2, auto)",
+        gridTemplateColumns: "repeat(3, auto)",
         gridGap: "2mm"
     },
     logo: {
@@ -33,6 +33,13 @@ const useStyles = makeStyles({
     buttons: {
         width: "1.25em",
         height: "1.25em"
+    },
+    selfButton: {
+        marginTop: "-1mm",
+        width: "2em",
+        height: "2em",
+        border: "3px solid black",
+        borderRadius: "1mm"
     }
 });
 
@@ -54,6 +61,7 @@ export const AppHeader = props => {
                 <div className={classes.container2}>
                     <MessageIcon className={classes.buttons}> </MessageIcon>
                     <PostAddIcon className={classes.buttons}></PostAddIcon>
+                    <span className={classes.selfButton}></span>
                 </div>
             </Grid>
         </Grid>
