@@ -25,6 +25,7 @@ export const Post = ({
                 .collection("votes")
                 .doc(postID)
                 .onSnapshot(snapshot => {
+                    console.log(snapshot);
                     if (snapshot.exists) {
                         setUserVote(snapshot.data().value);
                     }
@@ -73,6 +74,9 @@ export const Post = ({
                                     .doc(postID)
                                     .update({
                                         voteCount: increment(voteCount)
+                                    })
+                                    .then(() => {
+                                        // setUserVote(userVoteValue);
                                     });
                             }
                             Firestore.collection("users")
@@ -104,6 +108,9 @@ export const Post = ({
                                     .doc(postID)
                                     .update({
                                         voteCount: increment(voteCount)
+                                    })
+                                    .then(() => {
+                                        setUserVote(userVoteValue);
                                     });
                             }
                             Firestore.collection("users")
