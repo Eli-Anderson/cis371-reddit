@@ -26,9 +26,12 @@ const useStyles = makeStyles({
         gridGap: "2mm"
     },
     logo: {
-        margin: "1mm 1mm 0 5mm ",
+        margin: "1.5mm 1mm 0 5mm ",
         width: "2em",
-        height: "2em"
+        height: "2em",
+        color: "white",
+        background: "red",
+        borderRadius: "100%"
     },
     buttons: {
         width: "1.25em",
