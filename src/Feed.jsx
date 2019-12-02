@@ -28,76 +28,40 @@ export const Feed = props => {
     const match = useRouteMatch("/r/:subreddit");
 
     const subreddit = match && match.params.subreddit;
-    const lastPost = useRef(null);
 
     const loadPosts = useCallback(
         posts => {
             if (subreddit) {
                 setLoading(true);
-                // if (listener.current) {
-                //     listener.current(); // unsubscribe
-                // }
                 Firestore.collection("subreddits")
                     .doc(subreddit)
                     .get()
                     .then(snapshot => {
                         if (snapshot.exists) {
                             setName(snapshot.data().name || "");
-                            if (lastPost.current) {
-                                listener.current = Firestore.collection(
-                                    "subreddits"
-                                )
-                                    .doc(subreddit)
-                                    .collection("posts")
-                                    .orderBy("time", "desc")
-                                    .limit(4)
-                                    .startAfter(lastPost.current)
-                                    .get()
-                                    .then(snapshot => {
-                                        setLoading(false);
-                                        // we already have posts, so concat the new ones
-                                        if (!snapshot.empty) {
-                                            setPosts(
-                                                posts.concat(
-                                                    snapshot.docs.map(x => ({
-                                                        ...x.data(),
-                                                        postID: x.id
-                                                    }))
-                                                )
-                                            );
-                                            lastPost.current =
-                                                snapshot.docs[
-                                                    snapshot.docs.length - 1
-                                                ];
-                                        }
-                                    });
-                            } else {
-                                listener.current = Firestore.collection(
-                                    "subreddits"
-                                )
-                                    .doc(subreddit)
-                                    .collection("posts")
-                                    .orderBy("time", "desc")
-                                    .limit(4)
-                                    .get()
-                                    .then(snapshot => {
-                                        setLoading(false);
-                                        if (snapshot.empty) {
-                                            setPosts([]);
-                                        } else {
-                                            setPosts(
-                                                snapshot.docs.map(x => ({
-                                                    ...x.data(),
-                                                    postID: x.id
-                                                }))
-                                            );
-                                            lastPost.current =
-                                                snapshot.docs[
-                                                    snapshot.docs.length - 1
-                                                ];
-                                        }
-                                    });
+                            if (listener.current) {
+                                listener.current();
                             }
+                            listener.current = Firestore.collection(
+                                "subreddits"
+                            )
+                                .doc(subreddit)
+                                .collection("posts")
+                                .orderBy("time", "desc")
+                                .limit(4 + ((posts && posts.length) || 0))
+                                .onSnapshot(snapshot => {
+                                    setLoading(false);
+                                    // we already have posts, so concat the new ones
+                                    if (!snapshot.empty) {
+                                        setPosts(
+                                            snapshot.docs.map(x => ({
+                                                postID: x.id
+                                            }))
+                                        );
+                                    } else {
+                                        setPosts([]);
+                                    }
+                                });
                         } else {
                             setLoading(false);
                             setPosts(null);
@@ -150,7 +114,11 @@ export const Feed = props => {
                 >
                     {posts.map(post => (
                         <GridListTile key={post.postID} cols={1} rows={1}>
-                            <Post {...post} key={post.postID} />
+                            <Post
+                                subreddit={subreddit}
+                                {...post}
+                                key={post.postID}
+                            />
                         </GridListTile>
                     ))}
                 </GridList>

@@ -1,23 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import { PostFooter } from "./PostFooter";
-import { Card, CardHeader } from "@material-ui/core";
+import { Card, CardHeader, CircularProgress } from "@material-ui/core";
 import { BigPost } from "./BigPost";
 import { Firestore, increment } from "./db-init";
 
-export const Post = ({
-    postID,
-    content,
-    url,
-    time,
-    title,
-    userID,
-    viewCount,
-    voteCount
-}) => {
+export const Post = ({ subreddit, postID }) => {
     const userVoteListener = useRef(null);
+    const voteCountListener = useRef(null);
     const [open, setOpen] = useState(false);
     const [userVote, setUserVote] = useState(null);
-
+    const [data, setData] = useState(null);
     useEffect(() => {
         if (!userVoteListener.current) {
             userVoteListener.current = Firestore.collection("users")
@@ -25,7 +17,6 @@ export const Post = ({
                 .collection("votes")
                 .doc(postID)
                 .onSnapshot(snapshot => {
-                    console.log(snapshot);
                     if (snapshot.exists) {
                         setUserVote(snapshot.data().value);
                     }
@@ -33,25 +24,46 @@ export const Post = ({
         } else {
             userVoteListener.current(); // unsubscribe
         }
-    }, [postID]);
+        if (!voteCountListener.current) {
+            voteCountListener.current = Firestore.collection("subreddits")
+                .doc(subreddit)
+                .collection("posts")
+                .doc(postID)
+                .onSnapshot(snapshot => {
+                    if (snapshot.exists) {
+                        setData(snapshot.data());
+                    }
+                });
+        } else {
+            voteCountListener.current(); // unsubscribe
+        }
+    }, [postID, subreddit]);
+
+    if (data === null)
+        return (
+            <Card style={{ margin: 6 }}>
+                <CircularProgress />
+                <div style={{ backgroundColor: "#fafafa" }}></div>
+            </Card>
+        );
 
     return (
         <div>
             <Card style={{ margin: 6 }}>
                 <CardHeader
                     onClick={() => {
-                        if (content) setOpen(true);
-                        else window.open(url, "_blank");
+                        if (data.content) setOpen(true);
+                        else window.open(data.url, "_blank");
                     }}
                     style={{ textAlign: "left", cursor: "pointer" }}
-                    title={title}
+                    title={data.title}
                 ></CardHeader>
                 <div style={{ backgroundColor: "#fafafa" }}>
                     <PostFooter
                         subreddit={"cis371"}
-                        time={time}
-                        userID={userID}
-                        voteCount={voteCount}
+                        time={data.time}
+                        userID={data.userID}
+                        voteCount={data.voteCount}
                         userVote={userVote}
                         onUpvote={() => {
                             let voteCount = 0;
@@ -127,8 +139,8 @@ export const Post = ({
             <BigPost
                 open={open}
                 onClose={() => setOpen(false)}
-                markdown={content}
-                title={title}
+                markdown={data.content}
+                title={data.title}
             />
         </div>
     );
