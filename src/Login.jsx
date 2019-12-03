@@ -1,7 +1,13 @@
-import React, { useContext } from "react";
-import { AppContext } from "./App";
-import { Button, Modal, makeStyles, Fade, Backdrop } from "@material-ui/core";
-import { positions } from "@material-ui/system";
+import React, { useState, useCallback } from "react";
+import {
+    Button,
+    Modal,
+    makeStyles,
+    Fade,
+    Backdrop,
+    TextField
+} from "@material-ui/core";
+import { AppAUTH, Firestore } from "./db-init";
 
 const useStyles = makeStyles(theme => ({
     modal: {
@@ -11,12 +17,11 @@ const useStyles = makeStyles(theme => ({
     },
     paper: {
         backgroundColor: theme.palette.background.paper,
-        border: "2px solid grey",
         borderRadius: "2mm",
         padding: "1em",
         width: "50vw",
         boxShadow: theme.shadows[5],
-        padding: "16px"
+        outline: "none"
     },
     inputTable: {
         display: "grid",
@@ -35,66 +40,123 @@ const useStyles = makeStyles(theme => ({
         position: "relative"
     },
     login: {
-        background: "green",
-        color: "black",
+        color: "rgb(90, 241, 173)",
         fontSize: "16px",
-        alignItems: "center",
-        borderRadius: "4px"
+        alignItems: "center"
     },
-    setup: {
-        background: "red",
-        color: "black",
+    signup: {
+        color: "rgb(120, 173, 149)",
         fontSize: "16px",
-        alignItems: "center",
-        borderRadius: "4px"
+        alignItems: "center"
     }
 }));
 
-export const Login = props => {
-    const classes = useStyles();
-    const { loggedIn, setLoggedIn } = useContext(AppContext);
+export const Login = ({ open, onClose, ...props }) => {
+    const classes = useStyles(props);
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [name, setName] = useState("");
+
+    const login = useCallback(() => {
+        AppAUTH.signInWithEmailAndPassword(email, password)
+            .then(() => AppAUTH.setPersistence("local"))
+            .then(() => {
+                onClose();
+            })
+            .catch(reason => window.alert(reason));
+    }, [email, password, onClose]);
+
+    const signUp = useCallback(() => {
+        Firestore.collection("users")
+            .doc(name)
+            .get()
+            .then(snapshot => {
+                if (snapshot.exists) window.alert("Username is already in use");
+                else {
+                    AppAUTH.createUserWithEmailAndPassword(email, password)
+                        .then(u => {
+                            AppAUTH.currentUser
+                                .updateProfile({
+                                    displayName: name
+                                })
+                                .then(() => {
+                                    Firestore.collection("users")
+                                        .doc(name)
+                                        .set({
+                                            subscriptions: []
+                                        })
+                                        .then(() => {
+                                            onClose();
+                                        });
+                                });
+                        })
+                        .catch(reason => window.alert(reason));
+                }
+            });
+    }, [email, password, onClose, name]);
 
     return (
         <div>
             <Modal
-                aria-labelledby="transition-modal-title"
-                aria-describedby="transition-modal-description"
                 className={classes.modal}
-                open={!loggedIn}
-                onClose={setLoggedIn}
+                open={open}
+                onClose={onClose}
                 closeAfterTransition
                 BackdropComponent={Backdrop}
                 BackdropProps={{
                     timeout: 500
                 }}
             >
-                <Fade in={!loggedIn}>
+                <Fade in={open}>
                     <div className={classes.paper}>
-                        <div className={classes.inputTable}>
-                            <label for="userid">UserName</label>
-                            <input id="userid" type="text"></input>
-                            <label for="passwd">Password</label>
-                            <input id="passwd" type="text"></input>
-                        </div>
-                        <div className={classes.buttonGroup}>
-                            <Button
-                                className={classes.login}
-                                onClick={() => {
-                                    setLoggedIn(true);
-                                }}
-                            >
-                                Log in
-                            </Button>
+                        <form>
+                            <div className={classes.inputTable}>
+                                <TextField
+                                    label="Email"
+                                    type="email"
+                                    value={email}
+                                    onChange={ev => setEmail(ev.target.value)}
+                                />
+                                <TextField
+                                    label="Password"
+                                    type="password"
+                                    value={password}
+                                    onChange={ev =>
+                                        setPassword(ev.target.value)
+                                    }
+                                />
+                                <TextField
+                                    label="Username"
+                                    value={name}
+                                    onChange={ev => setName(ev.target.value)}
+                                />
+                            </div>
+                            <div className={classes.buttonGroup}>
+                                <Button
+                                    className={classes.login}
+                                    variant={name ? undefined : "outlined"}
+                                    disabled={!email || !password}
+                                    onClick={ev => {
+                                        ev.preventDefault();
+                                        login();
+                                    }}
+                                    type="submit"
+                                >
+                                    Log in
+                                </Button>
 
-                            <Button
-                                className={classes.setup}
-                                onClick={() => {
-                                    setLoggedIn(true);
-                                }}
-                            >
-                                Sign up
-                            </Button>
-                        </div>
+                                <Button
+                                    className={classes.signup}
+                                    variant={name ? "outlined" : undefined}
+                                    disabled={!email || !password || !name}
+                                    onClick={() => {
+                                        signUp();
+                                    }}
+                                >
+                                    Sign up
+                                </Button>
+                            </div>
+                        </form>
                     </div>
                 </Fade>
             </Modal>

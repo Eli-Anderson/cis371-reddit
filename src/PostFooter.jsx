@@ -1,8 +1,9 @@
-import React from "react";
+import React, { forwardRef } from "react";
 import { IconButton, Typography, Link, Box } from "@material-ui/core";
 import ThumbUp from "@material-ui/icons/ThumbUpAltOutlined";
 import ThumbDown from "@material-ui/icons/ThumbDownAltOutlined";
 import moment from "moment";
+import { Link as RouterLink } from "react-router-dom";
 import { makeStyles } from "@material-ui/styles";
 
 const useStyles = makeStyles({
@@ -23,6 +24,11 @@ export const PostFooter = ({
     subreddit
 }) => {
     const classes = useStyles({});
+
+    const Link1 = forwardRef(({ href, ...props }, ref) => (
+        <RouterLink innerRef={ref} to={href} {...props} />
+    ));
+
     return (
         <Box display="flex" flexDirection="row" alignItems="center" px={2}>
             <Box>
@@ -62,12 +68,17 @@ export const PostFooter = ({
                 >
                     by
                 </Typography>
-                <Link href={`/u/${userID}`} variant="subtitle2">
-                    {`/u/${userID}`}
-                </Link>
+                <Link
+                    href={`/u/${userID}`}
+                    component={Link1}
+                    variant="subtitle2"
+                >{`/u/${userID}`}</Link>
             </Box>
             <Box justifySelf="flex-end">
-                <Link href={`/r/${subreddit}`}>{`/r/${subreddit}`}</Link>
+                <Link
+                    component={Link1}
+                    href={`/r/${subreddit}`}
+                >{`/r/${subreddit}`}</Link>
             </Box>
         </Box>
     );

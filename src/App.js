@@ -1,29 +1,42 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./App.css";
 import { Home } from "./Home";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+import { AppAUTH } from "./db-init";
 
 const AppContext = React.createContext({
-    loggedIn: false,
-    setLoggedIn: null
+    user: null
 });
 
 function App() {
-    const [loggedIn, setLoggedIn] = useState(false);
+    const [user, setUser] = useState(null);
+    useEffect(() => {
+        // create a listener for auth state changes
+        AppAUTH.onAuthStateChanged(user => {
+            if (user) {
+                setUser({
+                    username: user.displayName,
+                    email: user.email
+                });
+            } else {
+                setUser(null);
+            }
+        });
+    }, []);
     return (
-        <AppContext.Provider value={{ loggedIn, setLoggedIn }}>
-          <div className="App">
-              <Router>
-                  <Switch>
-                      <Route path="/r/:subreddit" exact>
-                          <Home />
-                      </Route>
-                      <Route path="/" exact>
-                          <Home />
-                      </Route>
-                  </Switch>
-              </Router>
-          </div>
+        <AppContext.Provider value={{ user }}>
+            <div className="App">
+                <Router>
+                    <Switch>
+                        <Route path="/r/:subreddit" exact>
+                            <Home />
+                        </Route>
+                        <Route path="/" exact>
+                            <Home />
+                        </Route>
+                    </Switch>
+                </Router>
+            </div>
         </AppContext.Provider>
     );
 }
