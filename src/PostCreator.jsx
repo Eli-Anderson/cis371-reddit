@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useContext } from "react";
 import {
     Modal,
     Paper,
@@ -12,11 +12,16 @@ import {
     FormControlLabel,
     Checkbox,
     Button,
-    Fade
+    Fade,
+    IconButton,
+    Tooltip
 } from "@material-ui/core";
 import { makeStyles } from "@material-ui/styles";
 import ReactMarkdown from "react-markdown";
 import { Firestore, getTimestamp } from "./db-init";
+import { AppContext } from "./App";
+import { useRouteMatch } from "react-router-dom";
+import PostAddIcon from "@material-ui/icons/PostAdd";
 
 const HorizontalRadio = props => (
     <Box
@@ -33,7 +38,7 @@ const HorizontalRadio = props => (
 const useStyles = makeStyles({
     paper: {
         width: "80%",
-        height: "80%",
+        height: "85%",
         outline: "none"
     },
     title: {
@@ -47,16 +52,20 @@ const useStyles = makeStyles({
     }
 });
 
-export const PostCreator = ({ subreddit, ...props }) => {
+export const PostCreator = ({ iconClass, ...props }) => {
     const classes = useStyles(props);
+    const match = useRouteMatch("/r/:subreddit");
 
     const [open, setOpen] = useState(false);
 
+    const [subreddit, setSubreddit] = useState("");
     const [type, setType] = useState("link");
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
     const [url, setUrl] = useState("");
     const [preview, setPreview] = useState(false);
+
+    const { user } = useContext(AppContext);
 
     const createPost = useCallback(() => {
         const data = {
@@ -64,7 +73,8 @@ export const PostCreator = ({ subreddit, ...props }) => {
             time: getTimestamp(),
             voteCount: 0,
             viewCount: 0,
-            userID: "andeelij"
+            userID: user.username,
+            subreddit: subreddit
         };
         if (type === "link") {
             data.url = url;
@@ -73,32 +83,45 @@ export const PostCreator = ({ subreddit, ...props }) => {
         }
         Firestore.collection("subreddits")
             .doc(subreddit)
-            .collection("posts")
-            .doc()
-            .set(data)
-            .then(() => {
-                setOpen(false);
-                setType("link");
-                setTitle("");
-                setContent("");
-                setUrl("");
-                setPreview(false);
-            })
-            .catch(err => {
-                console.log(err);
-                window.alert("Something went wrong");
+            .get()
+            .then(snapshot => {
+                if (snapshot.exists) {
+                    Firestore.collection("subreddits")
+                        .doc(subreddit)
+                        .collection("posts")
+                        .doc()
+                        .set(data)
+                        .then(() => {
+                            setOpen(false);
+                            setType("link");
+                            setTitle("");
+                            setContent("");
+                            setUrl("");
+                            setPreview(false);
+                        })
+                        .catch(err => {
+                            console.log(err);
+                            window.alert("Something went wrong");
+                        });
+                } else {
+                    window.alert("That subreddit does not exist");
+                }
             });
-    }, [subreddit, type, title, url, content]);
+    }, [subreddit, type, title, url, content, user]);
 
     return (
         <>
-            <Button
-                variant="contained"
-                color="primary"
-                onClick={() => setOpen(true)}
-            >
-                New Post
-            </Button>
+            <Tooltip title="New Post">
+                <IconButton
+                    size="small"
+                    onClick={() => {
+                        if (match) setSubreddit(match.params.subreddit);
+                        setOpen(true);
+                    }}
+                >
+                    <PostAddIcon className={iconClass} />
+                </IconButton>
+            </Tooltip>
             <Fade in={open}>
                 <Modal
                     open={true}
@@ -123,6 +146,17 @@ export const PostCreator = ({ subreddit, ...props }) => {
                             <Typography variant="h4">
                                 Create a post...
                             </Typography>
+                            <TextField
+                                classes={{ root: classes.title }}
+                                label="Subreddit"
+                                value={`/r/${subreddit}`}
+                                onChange={ev => {
+                                    console.log(ev.target.value);
+                                    setSubreddit(ev.target.value.substring(3));
+                                }}
+                                margin="normal"
+                                variant="outlined"
+                            />
                             <TextField
                                 classes={{ root: classes.title }}
                                 label="Title"
@@ -160,7 +194,7 @@ export const PostCreator = ({ subreddit, ...props }) => {
                                     margin="normal"
                                     variant="outlined"
                                     multiline
-                                    rows={12}
+                                    rows={8}
                                 />
                             )}
                             {type === "markdown" && preview && (
@@ -168,7 +202,7 @@ export const PostCreator = ({ subreddit, ...props }) => {
                                     border="1px solid rgba(0,0,0,0.23)"
                                     borderRadius="4px"
                                     width="75%"
-                                    height="265px"
+                                    height="260px"
                                     overflow="scroll"
                                     marginTop="16px"
                                     marginBottom="8px"
@@ -205,7 +239,8 @@ export const PostCreator = ({ subreddit, ...props }) => {
                                     disabled={
                                         !title ||
                                         (type === "link" && !url) ||
-                                        (type === "markdown" && !content)
+                                        (type === "markdown" && !content) ||
+                                        !user
                                     }
                                     variant="contained"
                                     color="primary"
@@ -213,7 +248,7 @@ export const PostCreator = ({ subreddit, ...props }) => {
                                         createPost();
                                     }}
                                 >
-                                    Create
+                                    {user ? "Create" : "Must be signed in"}
                                 </Button>
                             </Box>
                         </Box>

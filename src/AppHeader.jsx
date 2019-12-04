@@ -1,22 +1,31 @@
-import React from "react";
-import { Grid, DialogTitle } from "@material-ui/core";
+import React, { useContext, useRef, useState } from "react";
+import {
+    Grid,
+    DialogTitle,
+    IconButton,
+    Typography,
+    Box,
+    Tooltip
+} from "@material-ui/core";
 import { makeStyles } from "@material-ui/styles";
-import { createMuiTheme } from "@material-ui/core/styles";
-import { green } from "@material-ui/core/colors";
-import MessageIcon from "@material-ui/icons/Message";
-import PostAddIcon from "@material-ui/icons/PostAdd";
 import RedditIcon from "@material-ui/icons/Reddit";
-import Button from "@material-ui/core/Button";
-import ButtonGroup from "@material-ui/core/ButtonGroup";
-import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
 import ClickAwayListener from "@material-ui/core/ClickAwayListener";
 import Grow from "@material-ui/core/Grow";
 import Paper from "@material-ui/core/Paper";
 import Popper from "@material-ui/core/Popper";
 import MenuItem from "@material-ui/core/MenuItem";
 import MenuList from "@material-ui/core/MenuList";
+import { useHistory } from "react-router-dom";
 
+<<<<<<< HEAD
 const options = ["Login in", "Exit"];
+=======
+import AccountCircle from "@material-ui/icons/AccountCircle";
+import { AppContext } from "./App";
+import { Login } from "./Login";
+import { PostCreator } from "./PostCreator";
+import { AppAUTH } from "./db-init";
+>>>>>>> c88441c0c1ed0bfeac4c58dec280f2511077530c
 
 const useStyles = makeStyles({
     root: {
@@ -30,7 +39,8 @@ const useStyles = makeStyles({
     container: {
         display: "grid",
         gridTemplateColumns: "repeat(2, auto)",
-        gridGap: "0"
+        gridGap: "0",
+        cursor: "pointer"
     },
     container2: {
         margin: "4mm 2mm 2mm 2mm",
@@ -47,8 +57,8 @@ const useStyles = makeStyles({
         borderRadius: "100%"
     },
     buttons: {
-        width: "1.25em",
-        height: "1.25em"
+        width: "1.5em",
+        height: "1.5em"
     },
     selfButton: {
         marginTop: "-1mm",
@@ -61,18 +71,21 @@ const useStyles = makeStyles({
 
 export const AppHeader = props => {
     const classes = useStyles(props);
-    const [open, setOpen] = React.useState(false);
-    const anchorRef = React.useRef(null);
-    const [selectedIndex, setSelectedIndex] = React.useState(1);
-    const handleClick = () => {
-        console.info(`You clicked ${options[selectedIndex]}`);
-    };
-    const handleMenuItemClick = (event, index) => {
-        setSelectedIndex(index);
-        setOpen(false);
-    };
-    const handleToggle = () => {
-        setOpen(prevOpen => !prevOpen);
+    const [open, setOpen] = useState(false);
+    const anchorRef = useRef(null);
+
+    const [loginOpen, setLoginOpen] = useState(false);
+
+    const history = useHistory();
+
+    const { user } = useContext(AppContext);
+
+    const handleAccountClick = () => {
+        if (user) {
+            setOpen(true);
+        } else {
+            setLoginOpen(true);
+        }
     };
     const handleClose = event => {
         if (anchorRef.current && anchorRef.current.contains(event.target)) {
@@ -80,19 +93,20 @@ export const AppHeader = props => {
         }
         setOpen(false);
     };
-    const theme = createMuiTheme({
-        palette: {
-            primary: green
-        }
-    });
 
     return (
         <Grid container direction="row" classes={{ root: classes.root }}>
+            <Login open={loginOpen} onClose={() => setLoginOpen(false)} />
             <Grid item>
                 {/* Logo */}
-                <div className={classes.container}>
+                <div
+                    className={classes.container}
+                    onClick={() => {
+                        history.push("/");
+                    }}
+                >
                     <RedditIcon className={classes.logo}></RedditIcon>
-                    <DialogTitle>Reddit Project</DialogTitle>
+                    <DialogTitle>The Reddit Project</DialogTitle>
                 </div>
             </Grid>
             <Grid item classes={{ root: classes.spacer }}>
@@ -100,36 +114,22 @@ export const AppHeader = props => {
             </Grid>
             <Grid item>
                 <div className={classes.container2}>
-                    <MessageIcon className={classes.buttons}> </MessageIcon>
-                    <PostAddIcon className={classes.buttons}></PostAddIcon>
-                    <span className={classes.selfButton}></span>
-                    <ButtonGroup
-                        theme={theme}
-                        variant="contained"
-                        color="primary"
-                        ref={anchorRef}
-                        aria-label="split button"
-                    >
-                        <Button
-                            color="primary"
+                    <PostCreator iconClass={classes.buttons} />
+                    <Tooltip title={user ? "Account" : "Sign in"}>
+                        <IconButton
                             size="small"
-                            aria-controls={
-                                open ? "split-button-menu" : undefined
-                            }
-                            aria-expanded={open ? "true" : undefined}
-                            aria-label="select merge strategy"
-                            aria-haspopup="menu"
-                            onClick={handleToggle}
+                            ref={anchorRef}
+                            onClick={handleAccountClick}
                         >
-                            <ArrowDropDownIcon />
-                        </Button>
-                    </ButtonGroup>
+                            <AccountCircle className={classes.buttons} />
+                        </IconButton>
+                    </Tooltip>
                     <Popper
                         open={open}
                         anchorEl={anchorRef.current}
-                        role={undefined}
                         transition
                         disablePortal
+                        style={{ zIndex: 1 }}
                     >
                         {({ TransitionProps, placement }) => (
                             <Grow
@@ -145,24 +145,44 @@ export const AppHeader = props => {
                                     <ClickAwayListener
                                         onClickAway={handleClose}
                                     >
-                                        <MenuList id="split-button-menu">
-                                            {options.map((option, index) => (
-                                                <MenuItem
-                                                    key={option}
-                                                    disabled={index === 2}
-                                                    selected={
-                                                        index === selectedIndex
-                                                    }
-                                                    onClick={event =>
-                                                        handleMenuItemClick(
-                                                            event,
-                                                            index
-                                                        )
-                                                    }
+                                        <MenuList>
+                                            <Box
+                                                margin="4px"
+                                                borderBottom="1px solid rgba(0,0,0,0.1)"
+                                            >
+                                                <Typography
+                                                    variant="body2"
+                                                    color="textSecondary"
                                                 >
-                                                    {option}
-                                                </MenuItem>
-                                            ))}
+                                                    Signed in as
+                                                </Typography>
+                                                <Typography
+                                                    variant="body2"
+                                                    color="textSecondary"
+                                                >
+                                                    {user ? user.username : ""}
+                                                </Typography>
+                                            </Box>
+                                            <MenuItem
+                                                onClick={() => {
+                                                    history.push(
+                                                        `/u/${user.username}`
+                                                    );
+                                                }}
+                                            >
+                                                Profile
+                                            </MenuItem>
+                                            <MenuItem
+                                                onClick={() => {
+                                                    AppAUTH.signOut().then(
+                                                        () => {
+                                                            setOpen(false);
+                                                        }
+                                                    );
+                                                }}
+                                            >
+                                                Logout
+                                            </MenuItem>
                                         </MenuList>
                                     </ClickAwayListener>
                                 </Paper>

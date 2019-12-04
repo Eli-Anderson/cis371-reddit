@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useContext } from "react";
 import {
     Modal,
     Paper,
@@ -10,6 +10,7 @@ import {
 } from "@material-ui/core";
 import { makeStyles } from "@material-ui/styles";
 import { Firestore, getTimestamp } from "./db-init";
+import { AppContext } from "./App";
 
 const useStyles = makeStyles({
     paper: {
@@ -37,12 +38,13 @@ export const SubredditCreator = ({ defaultValues, onSuccess, ...props }) => {
     const [name, setName] = useState(
         (defaultValues && defaultValues.name) || ""
     );
+    const { user } = useContext(AppContext);
 
     const createSubreddit = useCallback(() => {
         const data = {
             name,
             time: getTimestamp(),
-            userID: "andeelij"
+            userID: user.username
         };
         Firestore.collection("subreddits")
             .doc(id)
@@ -57,7 +59,7 @@ export const SubredditCreator = ({ defaultValues, onSuccess, ...props }) => {
                 console.log(err);
                 window.alert("Something went wrong");
             });
-    }, [name, id, onSuccess]);
+    }, [name, id, onSuccess, user]);
 
     return (
         <>
@@ -113,14 +115,14 @@ export const SubredditCreator = ({ defaultValues, onSuccess, ...props }) => {
                             <Box flexGrow={1} />
                             <Box alignSelf="flex-end">
                                 <Button
-                                    disabled={!id || !name}
+                                    disabled={!id || !name || !user}
                                     variant="contained"
                                     color="primary"
                                     onClick={() => {
                                         createSubreddit();
                                     }}
                                 >
-                                    Create
+                                    {user ? "Create" : "Must be signed in"}
                                 </Button>
                             </Box>
                         </Box>
