@@ -2,7 +2,7 @@
     "name": "cis371-reddit",
     "version": "0.1.0",
     "private": true,
-    "homepage": "https://Eli-Anderson.github.io/cis371-reddit",
+    "homepage": "https://eli-anderson.github.io/cis371-reddit/build",
     "dependencies": {
         "@babel/plugin-proposal-optional-chaining": "^7.6.0",
         "@fortawesome/fontawesome-svg-core": "^1.2.25",
