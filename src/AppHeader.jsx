@@ -17,15 +17,11 @@ import MenuItem from "@material-ui/core/MenuItem";
 import MenuList from "@material-ui/core/MenuList";
 import { useHistory } from "react-router-dom";
 
-<<<<<<< HEAD
-const options = ["Login in", "Exit"];
-=======
 import AccountCircle from "@material-ui/icons/AccountCircle";
 import { AppContext } from "./App";
 import { Login } from "./Login";
 import { PostCreator } from "./PostCreator";
 import { AppAUTH } from "./db-init";
->>>>>>> c88441c0c1ed0bfeac4c58dec280f2511077530c
 
 const useStyles = makeStyles({
     root: {

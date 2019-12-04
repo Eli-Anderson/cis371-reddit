@@ -16,27 +16,27 @@ const useStyles = makeStyles(theme => ({
         justifyContent: "center"
     },
     paper: {
-        backgroundColor: theme.palette.background.paper,
+        backgroundColor: "#CFEBDF",
         borderRadius: "2mm",
         padding: "1em",
-        width: "50vw",
         boxShadow: theme.shadows[5],
         outline: "none"
     },
     inputTable: {
         display: "grid",
-        gridTemplateColumns: "repeat(2, auto)",
+        gridTemplateColumns: "repeat(1, auto)",
         borderRadius: "4px",
         gridGap: "2mm",
         fontSize: "16px",
-        fontFamily: "Roboto, sans- serif"
+        fontFamily: "Roboto, sans- serif",
+        width: "500px"
     },
     buttonGroup: {
         width: "100 %",
         padding: "12px",
         marginRight: "auto",
         marginLeft: "auto",
-        textAlign: "right",
+        textAlign: "center",
         position: "relative"
     },
     login: {
