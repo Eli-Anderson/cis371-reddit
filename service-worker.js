@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "/cis371-reddit/precache-manifest.a72f15f655ff0acbe9ecd2b426abc1a7.js"
+  "/cis371-reddit/precache-manifest.aaecf0394ac5e6402166364a7ab1f2b6.js"
 );
 
 self.addEventListener('message', (event) => {
