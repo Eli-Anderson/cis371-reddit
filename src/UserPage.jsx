@@ -10,7 +10,6 @@ import {
     Typography,
     List
 } from "@material-ui/core";
-import InboxIcon from "@material-ui/icons/Inbox";
 import Grid from "@material-ui/core/Grid";
 import GridList from "@material-ui/core/GridList";
 import React, { useContext, useState, useEffect } from "react";
@@ -22,7 +21,7 @@ import { Link as RouterLink } from "react-router-dom";
 export const UserPage = props => {
     const [subscriptionNumber, setSubscriptionNumber] = useState(0);
     const [subscriptions, setSubscriptions] = useState([]);
-    const [posts, setPosts] = useState([]);
+    const [subredditsCreated, setsubredditsCreated] = useState([]);
     const [likes, setLikes] = useState(0);
     const { user } = useContext(AppContext);
     const match = useRouteMatch("/u/:username");
@@ -50,25 +49,29 @@ export const UserPage = props => {
                 setLikes(doc.docs.length);
             });
 
-        // var list = [];
-        // const subredditCollection = Firestore.collection("subreddits");
-        // const subredditDocuments = subredditCollection.get().then(snapshot => {
-        //     snapshot.forEach(doc => {
-        //         Firestore.collection("subreddits").doc(doc.data()).get()
-        //     });
-        //     setPosts(subredditCollection);
-        //     return subredditDocuments;
-        // }).catch(err => {
-        //     console.log(err);
-        // })
+        var list = [];
+        const subredditCollection = Firestore.collection("subreddits");
+        const subredditDocuments = subredditCollection
+            .get()
+            .then(snapshot => {
+                snapshot.forEach(doc => {
+                    if (doc.data().userID == match.params.username) {
+                        list.push(doc.data());
+                    }
+                });
+                setsubredditsCreated(list);
+                return subredditDocuments;
+            })
+            .catch(err => {
+                console.log(err);
+            });
     });
 
     return (
         <Grid>
             <AppHeader />
             <Grid container direction="row" style={{ marginTop: "50px" }}>
-                <Container maxWidth="xs">
-                    <InboxIcon />
+                <Container maxWidth="xs"style={{ textAlign: "left" }}>
                     {props.match.params.user !== null ? (
                         <h2 style={h2Style}>{props.match.params.user}</h2>
                     ) : (
@@ -91,7 +94,11 @@ export const UserPage = props => {
                     )}
                     {/* end private info */}
                     <Typography variant="subtitle2">
-                        Number of posts: {subscriptionNumber} <br />
+                        Number of subscriptions: {subscriptionNumber} <br />
+                    </Typography>
+                    <Typography variant="subtitle2">
+                        Number of subreddits created: {subredditsCreated.length}{" "}
+                        <br />
                     </Typography>
                     <Typography variant="subtitle2">
                         Number of likes and dislikes: {likes} <br />
@@ -99,33 +106,35 @@ export const UserPage = props => {
                 </Container>
 
                 <Container style={userHistory} maxWidth="md">
-                    <GridList cols={1}>
-                        {/* <GridListTile classes={{ root: classes.root }}>
+                    <GridList cols={2}>
+                        <GridListTile classes={{ root: classes.root }}>
                             <ListItem button classes={{ root: classes.button }}>
-                                <ListItemText primary="Posts" />
+                                <ListItemText primary="Subs Created" />
                             </ListItem>
                             <List>
-                                {subscriptions !== [] ? (
-                                    subscriptions.map(x => (
-                                        <ListItem key={x}>
-                                            <RouterLink to={`/r/${x}`}>
-                                                {x}
-                                            </RouterLink>
+                                { subredditsCreated !== [] 
+                                ? (
+                                    subredditsCreated.map(y => (
+                                        <ListItem key={y}>
+                                            <ListItemText primary={y.name}/>
                                         </ListItem>
                                     ))
-                                ) : (
+                                )
+                                : (
                                     <ListItem>
                                         <ListItemText primary="Nothing here." />
                                     </ListItem>
-                                )}
+                                )
+
+                                }
                             </List>
-                        </GridListTile> */}
+                        </GridListTile>
 
                         <GridListTile classes={{ root: classes.root }}>
                             <ListItem button classes={{ root: classes.button }}>
                                 <ListItemText primary="Subscriptions" />
                             </ListItem>
-                            <List>
+                            <List >
                                 {subscriptions !== [] ? (
                                     subscriptions.map(x => (
                                         <ListItem key={x}>
@@ -170,5 +179,6 @@ const userHistory = {
 
 const h2Style = {
     color: "#5F787C",
-    fontWeight: "bold"
+    fontWeight: "bold",
+    textAlign: "center"
 };
