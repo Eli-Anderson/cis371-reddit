@@ -37,8 +37,8 @@ function App() {
                         <Route path="/" exact>
                             <Home />
                         </Route>
-                        <Route exact path="/u/:user" render={ props => <UserPage {...props}/> }>
-                            
+                        <Route exact path="/u/:username">
+                            <UserPage />
                         </Route>
                     </Switch>
                 </Router>

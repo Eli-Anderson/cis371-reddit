@@ -1,8 +1,6 @@
 import { AppHeader } from "./AppHeader";
 import { AppContext } from "./App";
-// import Firebase from './db-init';
 import {
-    Box,
     Container,
     ListItem,
     ListItemText,
@@ -19,66 +17,55 @@ import { Firestore } from "./db-init";
 import { Link as RouterLink } from "react-router-dom";
 
 export const UserPage = props => {
-    const [subscriptionNumber, setSubscriptionNumber] = useState(0);
     const [subscriptions, setSubscriptions] = useState([]);
-    const [subredditsCreated, setsubredditsCreated] = useState([]);
+    const [subredditsCreated, setSubredditsCreated] = useState([]);
     const [likes, setLikes] = useState(0);
     const { user } = useContext(AppContext);
     const match = useRouteMatch("/u/:username");
 
-    const ableToView = match && user && user.username === match.params.username;
-    const classes = useStyles();
+    const classes = useStyles(props);
+
+    const matchUsername = match && match.params.username;
+    const ableToView = user && user.username === matchUsername;
 
     useEffect(() => {
-        Firestore.collection("users")
-            .doc(match.params.username)
-            .get()
-            .then(doc => {
-                const data = doc.data();
-
-                setSubscriptionNumber(data.subscriptions.length);
-                setSubscriptions(doc.data().subscriptions);
-                return doc.data().subscriptions || [];
-            });
-
-        Firestore.collection("users")
-            .doc(match.params.username)
-            .collection("votes")
-            .get()
-            .then(doc => {
-                setLikes(doc.docs.length);
-            });
-
-        var list = [];
-        const subredditCollection = Firestore.collection("subreddits");
-        const subredditDocuments = subredditCollection
-            .get()
-            .then(snapshot => {
-                snapshot.forEach(doc => {
-                    if (doc.data().userID == match.params.username) {
-                        list.push(doc.data());
-                    }
+        if (matchUsername) {
+            Firestore.collection("users")
+                .doc(matchUsername)
+                .onSnapshot(doc => {
+                    const data = doc.data();
+                    setSubscriptions(data.subscriptions);
                 });
-                setsubredditsCreated(list);
-                return subredditDocuments;
-            })
-            .catch(err => {
-                console.log(err);
+
+            Firestore.collection("users")
+                .doc(matchUsername)
+                .collection("votes")
+                .onSnapshot(doc => {
+                    setLikes(doc.docs.length);
+                });
+
+            Firestore.collection("subreddits").onSnapshot(snapshot => {
+                setSubredditsCreated(
+                    snapshot.docs
+                        .map(doc => ({ id: doc.id, ...doc.data() }))
+                        .filter(doc => doc.userID === matchUsername)
+                );
             });
-    });
+        }
+    }, [matchUsername]);
 
     return (
         <Grid>
             <AppHeader />
             <Grid container direction="row" style={{ marginTop: "50px" }}>
-                <Container maxWidth="xs"style={{ textAlign: "left" }}>
-                    {props.match.params.user !== null ? (
-                        <h2 style={h2Style}>{props.match.params.user}</h2>
+                <Container maxWidth="xs" style={{ textAlign: "left" }}>
+                    {matchUsername !== null ? (
+                        <h2 style={h2Style}>{matchUsername}</h2>
                     ) : (
                         <h2 style={h2Style}>Username</h2>
                     )}
                     {/* Private info */}
-                    {ableToView ? (
+                    {ableToView && (
                         <div>
                             <Typography variant="subtitle2">
                                 Sign up date: {user.creationTime}
@@ -89,15 +76,13 @@ export const UserPage = props => {
                                 <br />
                             </Typography>
                         </div>
-                    ) : (
-                        <div></div>
                     )}
                     {/* end private info */}
                     <Typography variant="subtitle2">
-                        Number of subscriptions: {subscriptionNumber} <br />
+                        Number of subscriptions: {subscriptions.length} <br />
                     </Typography>
                     <Typography variant="subtitle2">
-                        Number of subreddits created: {subredditsCreated.length}{" "}
+                        Number of subreddits created: {subredditsCreated.length}
                         <br />
                     </Typography>
                     <Typography variant="subtitle2">
@@ -112,21 +97,19 @@ export const UserPage = props => {
                                 <ListItemText primary="Subs Created" />
                             </ListItem>
                             <List>
-                                { subredditsCreated !== [] 
-                                ? (
-                                    subredditsCreated.map(y => (
-                                        <ListItem key={y}>
-                                            <ListItemText primary={y.name}/>
+                                {subredditsCreated.length ? (
+                                    subredditsCreated.map(sub => (
+                                        <ListItem key={sub.id}>
+                                            <RouterLink to={`/r/${sub.id}`}>
+                                                {sub.name}
+                                            </RouterLink>
                                         </ListItem>
                                     ))
-                                )
-                                : (
+                                ) : (
                                     <ListItem>
                                         <ListItemText primary="Nothing here." />
                                     </ListItem>
-                                )
-
-                                }
+                                )}
                             </List>
                         </GridListTile>
 
@@ -134,8 +117,8 @@ export const UserPage = props => {
                             <ListItem button classes={{ root: classes.button }}>
                                 <ListItemText primary="Subscriptions" />
                             </ListItem>
-                            <List >
-                                {subscriptions !== [] ? (
+                            <List>
+                                {subscriptions.length ? (
                                     subscriptions.map(x => (
                                         <ListItem key={x}>
                                             <RouterLink to={`/r/${x}`}>
