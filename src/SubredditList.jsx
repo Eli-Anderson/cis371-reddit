@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import {
     List,
     ListItem,
@@ -17,37 +17,35 @@ export const SubredditList = props => {
     const [loading, setLoading] = useState(false);
     const { user } = useContext(AppContext);
 
+    const userListener = useRef(null);
+    const subredditListener = useRef(null);
+
     useEffect(() => {
         setLoading(true);
         if (user) {
-            Firestore.collection("users")
+            if (userListener.current) userListener.current();
+            userListener.current = Firestore.collection("users")
                 .doc(user.username)
-                .get()
-                .then(snapshot => {
+                .onSnapshot(snapshot => {
                     setSubscriptions(snapshot.data().subscriptions || []);
-                    return snapshot.data().subscriptions || [];
-                })
-                .then(subs => {
-                    Firestore.collection("subreddits")
-                        .get()
-                        .then(snapshot => {
-                            setSubreddits(
-                                snapshot.docs
-                                    .map(d => d.id)
-                                    .filter(s => !subs.includes(s))
-                            );
-                            setLoading(false);
-                        });
-                });
-        } else {
-            Firestore.collection("subreddits")
-                .get()
-                .then(snapshot => {
-                    setSubreddits(snapshot.docs.map(d => d.id));
-                    setLoading(false);
                 });
         }
     }, [user]);
+
+    useEffect(() => {
+        setLoading(true);
+        if (subredditListener.current) subredditListener.current();
+        subredditListener.current = Firestore.collection(
+            "subreddits"
+        ).onSnapshot(snapshot => {
+            setSubreddits(
+                snapshot.docs
+                    .map(d => d.id)
+                    .filter(id => !subscriptions.includes(id))
+            );
+            setLoading(false);
+        });
+    }, [subscriptions]);
 
     if (user)
         return (
