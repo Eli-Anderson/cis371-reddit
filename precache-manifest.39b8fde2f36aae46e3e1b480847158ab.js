@@ -1,10 +1,10 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "ceedf65ba8c2849d53dbf86ee8e660f6",
+    "revision": "8267c2db6d70c249b5e9d383b18727f3",
     "url": "/cis371-reddit/index.html"
   },
   {
-    "revision": "b79531d2c9939e03fb18",
+    "revision": "b03bcb39c11c349c59fb",
     "url": "/cis371-reddit/static/css/main.1f401ddd.chunk.css"
   },
   {
@@ -12,8 +12,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/cis371-reddit/static/js/2.58e9b172.chunk.js"
   },
   {
-    "revision": "b79531d2c9939e03fb18",
-    "url": "/cis371-reddit/static/js/main.854bec3e.chunk.js"
+    "revision": "b03bcb39c11c349c59fb",
+    "url": "/cis371-reddit/static/js/main.5ea37172.chunk.js"
   },
   {
     "revision": "1fe9b97e874dd3b251cb",
